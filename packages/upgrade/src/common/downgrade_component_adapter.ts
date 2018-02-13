@@ -25,6 +25,7 @@ export class DowngradeComponentAdapter {
   private componentRef: ComponentRef<any>;
   private component: any;
   private changeDetector: ChangeDetectorRef;
+  private childComponentChangeDetector: ChangeDetectorRef;
 
   constructor(
       private element: angular.IAugmentedJQuery, private attrs: angular.IAttributes,
@@ -60,6 +61,7 @@ export class DowngradeComponentAdapter {
 
     this.componentRef =
         this.componentFactory.create(childInjector, projectableNodes, this.element[0]);
+    this.childComponentChangeDetector = this.componentRef.injector.get(ChangeDetectorRef);
     this.changeDetector = this.componentRef.changeDetectorRef;
     this.component = this.componentRef.instance;
 
@@ -139,6 +141,7 @@ export class DowngradeComponentAdapter {
         (<OnChanges>this.component).ngOnChanges(inputChanges !);
       }
 
+      this.childComponentChangeDetector.markForCheck();
       // If opted out of propagating digests, invoke change detection when inputs change.
       if (!propagateDigest) {
         detectChanges();
