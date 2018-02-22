@@ -12,6 +12,7 @@ import {BrowserModule} from '@angular/platform-browser';
 import {platformBrowserDynamic} from '@angular/platform-browser-dynamic';
 import * as angular from '@angular/upgrade/src/common/angular1';
 import {UpgradeComponent, UpgradeModule, downgradeComponent} from '@angular/upgrade/static';
+import {ChangeDetectionStrategy} from '@angular/core';
 
 import {bootstrap, html} from '../test_helpers';
 
@@ -124,6 +125,52 @@ import {bootstrap, html} from '../test_helpers';
            appComponent.value = 5;
          });
        }));
+
+      //  it('should propagate changes to a child component', async(() => {
+      //   let appComponent: AppComponent;
+
+      //   @Component({selector: 'my-app', template: '<my-child [disabled]="disabled"></my-child>'})
+      //   class AppComponent {
+      //     disabled: boolean;
+      //     constructor() { appComponent = this; }
+      //   }
+
+      //   @Component({
+      //     selector: 'my-child',
+      //     template: '<input [disabled]="disabled"/>',
+      //   })
+      //   class ChildComponent {
+      //     disabledValue: boolean;
+      //     @Input()
+      //     set disabled(v: boolean) { }
+      //     constructor(private zone: NgZone) {}
+
+      //     ngOnChanges(changes: SimpleChanges) {
+      //       if (changes['disabled'].isFirstChange()) return;
+
+      //       Promise.resolve().then(() => this.disabled = changes['disabled'].currentValue);
+      //     }
+      //   }
+
+      //   @NgModule({
+      //     declarations: [AppComponent, ChildComponent],
+      //     entryComponents: [AppComponent],
+      //     imports: [BrowserModule, UpgradeModule]
+      //   })
+      //   class Ng2Module {
+      //     ngDoBootstrap() {}
+      //   }
+
+      //   const ng1Module = angular.module('ng1', []).directive(
+      //       'myApp', downgradeComponent({component: AppComponent}));
+
+
+      //   const element = html('<my-app></my-app>');
+
+      //   bootstrap(platformBrowserDynamic(), Ng2Module, element, ng1Module).then((upgrade) => {
+      //     appComponent.disabled = true;
+      //   });
+      // }));
 
     // This test demonstrates https://github.com/angular/angular/issues/6385
     // which was invalidly fixed by https://github.com/angular/angular/pull/6386
