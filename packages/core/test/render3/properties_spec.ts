@@ -9,7 +9,7 @@
 import {EventEmitter} from '@angular/core';
 
 import {defineComponent, defineDirective} from '../../src/render3/index';
-import {NO_CHANGE, bind, bind1, componentRefresh, container, containerRefreshEnd, containerRefreshStart, elementEnd, elementProperty, elementStart, embeddedViewEnd, embeddedViewStart, listener, memory, text, textBinding} from '../../src/render3/instructions';
+import {NO_CHANGE, bind, container, containerRefreshEnd, containerRefreshStart, directiveRefresh, elementEnd, elementProperty, elementStart, embeddedViewEnd, embeddedViewStart, interpolation1, listener, load, text, textBinding} from '../../src/render3/instructions';
 
 import {renderToHtml} from './render_util';
 
@@ -55,7 +55,7 @@ describe('elementProperty', () => {
         elementStart(0, 'span');
         elementEnd();
       }
-      elementProperty(0, 'id', bind1('_', ctx, '_'));
+      elementProperty(0, 'id', interpolation1('_', ctx, '_'));
     }
 
     expect(renderToHtml(Template, 'testId')).toEqual('<span id="_testId_"></span>');
@@ -157,7 +157,7 @@ describe('elementProperty', () => {
         }
         elementProperty(0, 'id', bind(ctx.id));
         Comp.ngComponentDef.h(1, 0);
-        componentRefresh(1, 0);
+        directiveRefresh(1, 0);
       }
 
       expect(renderToHtml(Template, {id: 1})).toEqual(`<comp></comp>`);
@@ -479,7 +479,7 @@ describe('elementProperty', () => {
               elementEnd();
               text(2);
             }
-            textBinding(2, bind(memory<MyDir>(1).role));
+            textBinding(2, bind(load<MyDir>(1).role));
           },
           factory: () => new Comp()
         });
@@ -502,7 +502,7 @@ describe('elementProperty', () => {
               elementEnd();
             }
             Comp.ngComponentDef.h(1, 0);
-            componentRefresh(1, 0);
+            directiveRefresh(1, 0);
             embeddedViewEnd();
           }
         }

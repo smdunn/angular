@@ -11,7 +11,7 @@ import {MockAnimationDriver, MockAnimationPlayer} from '@angular/animations/brow
 
 import {RendererType2, ViewEncapsulation} from '../../src/core';
 import {defineComponent, detectChanges} from '../../src/render3/index';
-import {bind, componentRefresh, elementEnd, elementProperty, elementStart, listener, text} from '../../src/render3/instructions';
+import {bind, directiveRefresh, elementEnd, elementProperty, elementStart, listener, text} from '../../src/render3/instructions';
 import {createRendererType2} from '../../src/view/index';
 
 import {getAnimationRendererFactory2, getRendererFactory2} from './imported_renderer2';
@@ -68,7 +68,7 @@ describe('renderer factory lifecycle', () => {
       elementEnd();
     }
     SomeComponent.ngComponentDef.h(2, 1);
-    componentRefresh(2, 1);
+    directiveRefresh(2, 1);
   }
 
   beforeEach(() => { logs = []; });
@@ -181,7 +181,7 @@ describe('animation renderer factory', () => {
     expect(toHtml(containerEl)).toEqual('foo');
   });
 
-  it('should work with animated components', (done) => {
+  isBrowser && it('should work with animated components', (done) => {
     const factory = getAnimationRendererFactory2(document);
     const component = renderComponent(SomeComponentWithAnimation, factory);
     expect(toHtml(containerEl))

@@ -7,7 +7,7 @@
  */
 
 import {defineDirective} from '../../src/render3/index';
-import {bind, componentRefresh, elementEnd, elementProperty, elementStart, memory} from '../../src/render3/instructions';
+import {bind, directiveRefresh, elementEnd, elementProperty, elementStart, load} from '../../src/render3/instructions';
 
 import {renderToHtml} from './render_util';
 
@@ -24,8 +24,7 @@ describe('directive', () => {
           type: Directive,
           factory: () => directiveInstance = new Directive,
           hostBindings: (directiveIndex: number, elementIndex: number) => {
-            elementProperty(
-                elementIndex, 'className', bind(memory<Directive>(directiveIndex).klass));
+            elementProperty(elementIndex, 'className', bind(load<Directive>(directiveIndex).klass));
           }
         });
       }
@@ -36,7 +35,7 @@ describe('directive', () => {
           elementEnd();
         }
         Directive.ngDirectiveDef.h(1, 0);
-        componentRefresh(1, 0);
+        directiveRefresh(1, 0);
       }
 
       expect(renderToHtml(Template, {})).toEqual('<span class="foo"></span>');

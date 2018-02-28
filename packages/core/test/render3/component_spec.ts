@@ -6,9 +6,12 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {ViewEncapsulation} from '../../src/core';
+import {withBody} from '@angular/core/testing';
+
+import {DoCheck, ViewEncapsulation} from '../../src/core';
+import {detectChanges, getRenderedText, whenRendered} from '../../src/render3/component';
 import {defineComponent, markDirty} from '../../src/render3/index';
-import {bind, componentRefresh, container, containerRefreshEnd, containerRefreshStart, elementEnd, elementProperty, elementStart, embeddedViewEnd, embeddedViewStart, text, textBinding} from '../../src/render3/instructions';
+import {bind, container, containerRefreshEnd, containerRefreshStart, directiveRefresh, elementEnd, elementProperty, elementStart, embeddedViewEnd, embeddedViewStart, text, textBinding} from '../../src/render3/instructions';
 import {createRendererType2} from '../../src/view/index';
 
 import {getRendererFactory2} from './imported_renderer2';
@@ -45,12 +48,12 @@ describe('component', () => {
       const component = renderComponent(CounterComponent);
       expect(toHtml(containerEl)).toEqual('0');
       component.count = 123;
-      markDirty(component, requestAnimationFrame);
+      markDirty(component);
       expect(toHtml(containerEl)).toEqual('0');
       requestAnimationFrame.flush();
       expect(toHtml(containerEl)).toEqual('123');
       component.increment();
-      markDirty(component, requestAnimationFrame);
+      markDirty(component);
       expect(toHtml(containerEl)).toEqual('123');
       requestAnimationFrame.flush();
       expect(toHtml(containerEl)).toEqual('124');
@@ -111,7 +114,7 @@ describe('component with a container', () => {
     }
     elementProperty(0, 'items', bind(ctx.items));
     WrapperComponent.ngComponentDef.h(1, 0);
-    componentRefresh(1, 0);
+    directiveRefresh(1, 0);
   }
 
   it('should re-render on input change', () => {
@@ -137,7 +140,7 @@ describe('encapsulation', () => {
           elementEnd();
         }
         EncapsulatedComponent.ngComponentDef.h(1, 0);
-        componentRefresh(1, 0);
+        directiveRefresh(1, 0);
       },
       factory: () => new WrapperComponent,
     });
@@ -154,7 +157,7 @@ describe('encapsulation', () => {
           elementEnd();
         }
         LeafComponent.ngComponentDef.h(2, 1);
-        componentRefresh(2, 1);
+        directiveRefresh(2, 1);
       },
       factory: () => new EncapsulatedComponent,
       rendererType:
@@ -202,7 +205,7 @@ describe('encapsulation', () => {
             elementEnd();
           }
           LeafComponentwith.ngComponentDef.h(1, 0);
-          componentRefresh(1, 0);
+          directiveRefresh(1, 0);
         },
         factory: () => new WrapperComponentWith,
         rendererType:
@@ -231,5 +234,70 @@ describe('encapsulation', () => {
     expect(containerEl.outerHTML)
         .toMatch(
             /<div host="" _nghost-c(\d+)=""><leaf _ngcontent-c\1="" _nghost-c(\d+)=""><span _ngcontent-c\2="">bar<\/span><\/leaf><\/div>/);
+  });
+
+  describe('markDirty, detectChanges, whenRendered, getRenderedText', () => {
+    class MyComponent implements DoCheck {
+      value: string = 'works';
+      doCheckCount = 0;
+      ngDoCheck(): void { this.doCheckCount++; }
+
+      static ngComponentDef = defineComponent({
+        type: MyComponent,
+        tag: 'my-comp',
+        factory: () => new MyComponent(),
+        template: (ctx: MyComponent, cm: boolean) => {
+          if (cm) {
+            elementStart(0, 'span');
+            text(1);
+            elementEnd();
+          }
+          textBinding(1, bind(ctx.value));
+        }
+      });
+    }
+
+    it('should mark a component dirty and schedule change detection', withBody('my-comp', () => {
+         const myComp = renderComponent(MyComponent);
+         expect(getRenderedText(myComp)).toEqual('works');
+         myComp.value = 'updated';
+         markDirty(myComp);
+         expect(getRenderedText(myComp)).toEqual('works');
+         requestAnimationFrame.flush();
+         expect(getRenderedText(myComp)).toEqual('updated');
+       }));
+
+    it('should detectChanges on a component', withBody('my-comp', () => {
+         const myComp = renderComponent(MyComponent);
+         expect(getRenderedText(myComp)).toEqual('works');
+         myComp.value = 'updated';
+         detectChanges(myComp);
+         expect(getRenderedText(myComp)).toEqual('updated');
+       }));
+
+    it('should detectChanges only once if markDirty is called multiple times',
+       withBody('my-comp', () => {
+         const myComp = renderComponent(MyComponent);
+         expect(getRenderedText(myComp)).toEqual('works');
+         expect(myComp.doCheckCount).toBe(1);
+         myComp.value = 'ignore';
+         markDirty(myComp);
+         myComp.value = 'updated';
+         markDirty(myComp);
+         expect(getRenderedText(myComp)).toEqual('works');
+         requestAnimationFrame.flush();
+         expect(getRenderedText(myComp)).toEqual('updated');
+         expect(myComp.doCheckCount).toBe(2);
+       }));
+
+    it('should notify whenRendered', withBody('my-comp', async() => {
+         const myComp = renderComponent(MyComponent);
+         await whenRendered(myComp);
+         myComp.value = 'updated';
+         markDirty(myComp);
+         setTimeout(requestAnimationFrame.flush, 0);
+         await whenRendered(myComp);
+         expect(getRenderedText(myComp)).toEqual('updated');
+       }));
   });
 });

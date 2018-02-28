@@ -1,10 +1,14 @@
 workspace(name = "angular")
 
+# Using a pre-release snapshot to pick up a commit that makes all nodejs_binary
+# programs produce source-mapped stack traces and uglify sourcemaps.
+RULES_NODEJS_VERSION = "4303cbef12e5e252ad66cc35cff1123e3a44ee83"
+
 http_archive(
     name = "build_bazel_rules_nodejs",
-    url = "https://github.com/bazelbuild/rules_nodejs/archive/0.4.1.zip",
-    strip_prefix = "rules_nodejs-0.4.1",
-    sha256 = "e9bc013417272b17f302dc169ad597f05561bb277451f010043f4da493417607",
+    url = "https://github.com/bazelbuild/rules_nodejs/archive/%s.zip" % RULES_NODEJS_VERSION,
+    strip_prefix = "rules_nodejs-%s" % RULES_NODEJS_VERSION,
+    sha256 = "fccb9a7122f339d89c9994dc0fea33c737dd76e66281d0da0cb841da5f1edec7",
 )
 
 load("@build_bazel_rules_nodejs//:defs.bzl", "check_bazel_version", "node_repositories")
@@ -12,11 +16,13 @@ load("@build_bazel_rules_nodejs//:defs.bzl", "check_bazel_version", "node_reposi
 check_bazel_version("0.9.0")
 node_repositories(package_json = ["//:package.json"])
 
+RULES_TYPESCRIPT_VERSION = "d3cc5cd72d89aee0e4c2553ae1b99c707ecbef4e"
+
 http_archive(
     name = "build_bazel_rules_typescript",
-    url = "https://github.com/bazelbuild/rules_typescript/archive/0.10.1.zip",
-    strip_prefix = "rules_typescript-0.10.1",
-    sha256 = "a2c81776a4a492ff9f878f9705639f5647bef345f7f3e1da09c9eeb8dec80485",
+    url = "https://github.com/bazelbuild/rules_typescript/archive/%s.zip" % RULES_TYPESCRIPT_VERSION,
+    strip_prefix = "rules_typescript-%s" % RULES_TYPESCRIPT_VERSION,
+    sha256 = "a233fcca41c3e59f639ac71c396edb30e9e9716cf8ed5fb20b51ff8910d5d895",
 )
 
 load("@build_bazel_rules_typescript//:defs.bzl", "ts_setup_workspace")
@@ -28,13 +34,16 @@ local_repository(
     path = "node_modules/rxjs/src",
 )
 
-git_repository(
+# This commit matches the version of buildifier in angular/ngcontainer
+# If you change this, also check if it matches the version in the angular/ngcontainer
+# version in /.circleci/config.yml
+BAZEL_BUILDTOOLS_VERSION = "b3b620e8bcff18ed3378cd3f35ebeb7016d71f71"
+
+http_archive(
     name = "com_github_bazelbuild_buildtools",
-    remote = "https://github.com/bazelbuild/buildtools.git",
-    # Note, this commit matches the version of buildifier in angular/ngcontainer
-    # If you change this, also check if it matches the version in the angular/ngcontainer
-    # version in /.circleci/config.yml
-    commit = "b3b620e8bcff18ed3378cd3f35ebeb7016d71f71",
+    url = "https://github.com/bazelbuild/buildtools/archive/%s.zip" % BAZEL_BUILDTOOLS_VERSION,
+    strip_prefix = "buildtools-%s" % BAZEL_BUILDTOOLS_VERSION,
+    sha256 = "dad19224258ed67cbdbae9b7befb785c3b966e5a33b04b3ce58ddb7824b97d73",
 )
 
 http_archive(
